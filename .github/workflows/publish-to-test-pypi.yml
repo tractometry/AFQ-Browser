@@ -3,6 +3,8 @@ name: Publish Python 🐍 distributions 📦 to PyPI and TestPyPI
 on: push
 jobs:
   build-n-publish:
+    permissions:
+      id-token: write
     name: Build and publish Python 🐍 distributions 📦 to PyPI and TestPyPI
     runs-on: ubuntu-latest
     steps:
