@@ -19,13 +19,11 @@ installed. To install it, in a shell or command line, issue the following::
 
   pip install AFQ-Browser
 
-One easy way to install these, is by installing the Anaconda_ Python
-distribution,
-
 Installing the development version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The development version is probably less stable, but might include new features and fixes. There are two ways to install this version. The first uses ``pip``::
+The development version is probably less stable, but might include new features
+and fixes. There are two ways to install this version. The first uses ``pip``::
 
   pip install git+https://github.com/yeatmanlab/AFQ-Browser.git
 
@@ -35,7 +33,15 @@ The other requires that you clone the source code to your machine::
 
 Then, change your working directory into the top-level directory of this repo and issue::
 
-  python setup.py install
+  pip install -e .
+
+To also install all the development dependencies, issue::
+
+  pip install -e .[all]
+
+Or, on the Mac default z-shell, issue::
+
+    pip install -e .'[all]'
 
 .. _numpy: http://numpy.org
 .. _scipy: http://scipy.org
