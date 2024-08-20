@@ -1,15 +1,6 @@
 .. _home:
 
-.. figure:: _static/BDE_Banner_revised20160211-01.jpg
-   :align: center
-   :figclass: align-center
-   :target: http://brainandeducation.com
-
-
-AFQ-Browser:
-============
-
-visualizing and sharing Automated Fiber Quantification results
+AFQ-Browser: visualizing and sharing Automated Fiber Quantification results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This software generates a browser-based visualization of data processed with
@@ -55,3 +46,9 @@ Documentation
 
 
 .. _AFQ: http://github.com/yeatmanlab/AFQ
+
+.. figure:: _static/BDE_Banner_revised20160211-01.jpg
+   :align: center
+   :figclass: align-center
+   :target: http://brainandeducation.com
+
