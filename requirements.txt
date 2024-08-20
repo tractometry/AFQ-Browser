@@ -1,5 +1,0 @@
-numpy>=1.16.5
-pandas
-scipy
-PyGithub>=1.32
-GitPython
