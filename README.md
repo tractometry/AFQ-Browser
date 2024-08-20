@@ -6,7 +6,7 @@ The software takes as input the results of analysis from the ``AFQ`` or
 Command-line tools allow users to create these visualizations from their data
 and upload them to share with others as a website.
 
-See [https://yeatmanlab.github.io/AFQ-Browser/](https://yeatmanlab.github.io/AFQ-Browser/) for documentation
+See [https://tractometry.github.io/AFQ-Browser/](https://tractometry.github.io/AFQ-Browser/) for documentation
 
 See: [https://yeatmanlab.github.io/AFQBrowser-demo/](https://yeatmanlab.github.io/AFQBrowser-demo/) for a working example
 
