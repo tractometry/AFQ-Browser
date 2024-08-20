@@ -18,6 +18,8 @@ This software package allows researchers to interactively query the data
 processed with `AFQ` (or other similar software) to explore patterns in the
 data.
 
+.. _AFQ: http://github.com/yeatmanlab/AFQ
+
 AFQ-Browser paper
 ~~~~~~~~~~~~~~~~~
 
@@ -44,8 +46,10 @@ Documentation
        api
 
 
-
-.. _AFQ: http://github.com/yeatmanlab/AFQ
+.. figure:: _static/eScience_Logo_HR.png
+   :align: center
+   :figclass: align-center
+   :target: http://escience.washington.edu
 
 .. figure:: _static/BDE_Banner_revised20160211-01.jpg
    :align: center
