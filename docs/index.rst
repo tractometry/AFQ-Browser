@@ -20,12 +20,10 @@ data.
 
 .. _AFQ: http://github.com/yeatmanlab/AFQ
 
-AFQ-Browser paper
-~~~~~~~~~~~~~~~~~
+More details and motivation behind this project, are available in the `paper <https://www.nature.com/articles/s41467-018-03297-7>`_:
 
-If you are interested in technical details and motivation behind this project, please read our `paper <https://www.nature.com/articles/s41467-018-03297-7>`_.
+      `Yeatman, J. D., Richie-Halford, A., Smith, J. K., Keshavan, A., & Rokem, A. (2018). A browser-based tool for visualization and analysis of diffusion MRI data. Nature Communications, 9(1), 940.`
 
-A slide presentation about the project is available `here <https://arokem.github.io/2019-OHBM-AFQ-Browser/>`_.
 
 Acknowledgements
 ~~~~~~~~~~~~~~~~~~~
