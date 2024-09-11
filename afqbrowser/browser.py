@@ -76,7 +76,8 @@ def _extract_params(afq):
 
 def _create_metadata(subject_ids, meta_fname):
     """Helper function to create a minimal metadata file."""
-    meta_df = pd.DataFrame({"subjectID": subject_ids}, index=range(len(subject_ids)))
+    meta_df = pd.DataFrame({"subjectID": subject_ids},
+                           index=range(len(subject_ids)))
     meta_df.to_csv(meta_fname)
 
 
@@ -176,7 +177,7 @@ def _validate(nodes_fname, meta_fname, streamlines_fname):
 
     meta_df = pd.read_csv(meta_fname)
 
-    # check subjcts consistent
+    # check subjects consistent
     if "subjectID" not in meta_df.columns:
         validation_errors.append(
             ValueError("Metadata file missing required column: subjectID")
