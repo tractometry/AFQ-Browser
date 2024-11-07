@@ -18,6 +18,9 @@ import pandas as pd
 import numpy as np
 import afqbrowser as afqb
 
+import dipy.tracking.streamlinespeed as dps
+import AFQ.utils.streamlines as aus
+
 from http.server import SimpleHTTPRequestHandler
 import socketserver
 
@@ -221,6 +224,103 @@ def _validate(nodes_fname, meta_fname, streamlines_fname):
                 )
 
     return validation_errors
+
+
+def pyAFQ2nodes(source, out_path=None, metadata=None):
+    """
+    Create a nodes table from a pyAFQ `source` directory.
+    
+    Parameters
+    ----------
+    source : str
+        Full path to a directory containing pyAFQ results
+        (typically something like `bids_dir/derivatives/afq`).
+    out_path : str, optional
+        Full path to directory where the nodes table will be saved.
+    metadata : str, optional
+        Full path to a file with user-supplied metadata. This has to be a csv
+        file with column headers in the first row, including a column named
+        "subjectID". For an example, see the 'data/subjects.csv' that comes
+        with the software.
+    """
+    nodes_csv = op.join(source, "tract_profiles.csv")
+    out_nodes_csv = op.join(out_path, "nodes.csv")
+    if not op.exists(nodes_csv):
+        raise ValueError((
+            "tract_profiles.csv not found. Run GroupAFQ combine_profiles "
+            "to generate tract_profiles.csv"))
+    else:
+        shutil.copy(nodes_csv, out_nodes_csv)
+    nodes_df = pd.read_csv(
+        nodes_csv,
+        dtype={"subjectID": str, "sessionID": str, "tractID": str})
+    subject_ids = nodes_df.subjectID.unique()
+    session_ids = nodes_df.sessionID.unique()
+    tract_ids = nodes_df.tractID.unique()
+
+    meta_fname = op.join(out_path, "subjects.csv")
+    if metadata is None:
+        _create_metadata(subject_ids, meta_fname)
+    else:
+        shutil.copy(metadata, meta_fname)
+
+    streamlines_fname = op.join(out_path, "streamlines.json")
+    trk_info = []
+
+    def load_next_subject():
+        subses_idx = len(trk_info)
+        sub = subject_ids[subses_idx]
+        ses = session_ids[subses_idx]
+        subject_folder = op.join(source, f"sub-{sub}")
+        sess_folder = op.join(subject_folder, f"ses-{ses}")
+        if op.isdir(sess_folder):
+            subject_folder = sess_folder
+        this_bundles_file = glob(op.join(
+            subject_folder, f"*recogmethod-AFQ*.tr*"))
+        if len(this_bundles_file) < 1:
+            raise ValueError((
+                f"No bundles file found for subject {sub}"
+                f" and session {ses}. Check the path: {subject_folder}"))
+        else:
+            this_bundles_file = this_bundles_file[0]
+        seg_sft = aus.SegmentedSFT.fromfile(
+            this_bundles_file,
+            "same")
+        trk_info.append(seg_sft)
+
+    sls_dict = {}
+    load_next_subject()  # load first subject
+    for b in tract_ids:
+        for i in range(len(subject_ids)):
+            seg_sft = trk_info[i]
+            idx = seg_sft.bundle_idxs[b]
+            # use the first subses that works
+            # otherwise try each successive subses
+            if len(idx) == 0:
+                # break if we run out of subses
+                if i + 1 >= len(subject_ids):
+                    break
+                # load subses if not already loaded
+                if i + 1 >= len(trk_info):
+                    load_next_subject()
+                continue
+            if len(idx) > 100:
+                idx = np.random.choice(
+                    idx, size=100, replace=False)
+            seg_sft.sft.to_rasmm()
+            these_sls = seg_sft.sft.streamlines[idx]
+            these_sls = dps.set_number_of_points(these_sls, 100)
+            these_sls = np.asarray(these_sls)
+            median_sl = np.median(these_sls, axis=0)
+            sls_dict[b] = {"coreFiber": median_sl.tolist()}
+            for ii, sl_idx in enumerate(idx):
+                sls_dict[b][str(sl_idx)] = these_sls[ii].tolist()
+            break
+
+    with open(streamlines_fname, 'w') as fp:
+        json.dump(sls_dict, fp)
+
+    return out_nodes_csv, meta_fname, streamlines_fname
 
 
 def tracula2nodes(stats_dir, out_path=None, metadata=None, params=None):
@@ -669,18 +769,32 @@ def assemble(
     settings_path = op.join(site_dir, "client", "settings.json")
     update_settings_json(settings_path, title, subtitle, link, sublink)
 
+    # Check if we have pyAFQ path or a TRACULA stats path:
     if op.isdir(source):
-        # Assume we got a TRACULA stats path:
-        nodes_fname, meta_fname, streamlines_fname, params_fname = tracula2nodes(
-            source, out_path=out_path, metadata=metadata
-        )
+        is_pyafq = False
+        data_desc_path = op.join(source, "dataset_description.json")
+        if op.exists(data_desc_path):
+            with open(data_desc_path, 'r') as fp:
+                data_desc = json.load(fp)
+            if "PipelineDescription" in data_desc:
+                if "Name" in data_desc["PipelineDescription"]:
+                    if data_desc["PipelineDescription"]["Name"] == "pyAFQ":
+                        is_pyafq = True
+        if is_pyafq:
+            nodes_fname, meta_fname, streamlines_fname = pyAFQ2nodes(
+                source, out_path=out_path, metadata=metadata
+            )
+        else:
+            nodes_fname, meta_fname, streamlines_fname, _ = tracula2nodes(
+                source, out_path=out_path, metadata=metadata
+            )
 
     else:
         ext = os.path.splitext(source)[-1].lower()
 
         if ext == ".mat":
             # We have an AFQ-generated mat-file on our hands:
-            nodes_fname, meta_fname, streamlines_fname, params_fname = afq_mat2tables(
+            nodes_fname, meta_fname, streamlines_fname, _ = afq_mat2tables(
                 source, out_path=out_path, metadata=metadata
             )
         elif ext == ".csv":
@@ -691,7 +805,7 @@ def assemble(
         else:
             raise ValueError(
                 "Unknown source argument must be on of: "
-                "TRACULA directory, AFQ mat file, or nodes csv file"
+                "TRACULA or pyAFQ directory, AFQ mat file, or nodes csv file"
             )
 
     validation_errors = _validate(nodes_fname, meta_fname, streamlines_fname)
